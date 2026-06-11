@@ -15,22 +15,47 @@ function resize() {
 resize();
 window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', resize);
+document.addEventListener('fullscreenchange', resize);
+
+// Vollbild geht aus Sicherheitsgründen nur nach einer Nutzergeste,
+// daher beim ersten Tap (nur auf Touch-Geräten, am Desktop bleibt es ein Fenster).
+// iOS Safari unterstützt die Fullscreen-API nicht – dort bleibt es beim Vollbild-Layout.
+function tryFullscreen() {
+  if (document.fullscreenElement) return;
+  const el = document.documentElement;
+  const request = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (request) {
+    try {
+      const result = request.call(el);
+      if (result && result.catch) result.catch(() => {});
+    } catch {
+      // Vollbild nicht verfügbar – Spiel läuft normal weiter
+    }
+  }
+}
 
 const game = new Game();
 
 window.addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  if (e.pointerType === 'touch') tryFullscreen();
   game.onPress();
 });
+window.addEventListener('pointerup', () => game.onRelease());
+window.addEventListener('pointercancel', () => game.onRelease());
 // verhindert Doppeltipp-Zoom/Scrollen auf iOS; Eingabe läuft über pointerdown
 window.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 window.addEventListener('contextmenu', (e) => e.preventDefault());
+const JUMP_KEYS = ['Space', 'ArrowUp', 'KeyW'];
 window.addEventListener('keydown', (e) => {
   if (e.repeat) return;
-  if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+  if (JUMP_KEYS.includes(e.code)) {
     e.preventDefault();
     game.onPress();
   }
+});
+window.addEventListener('keyup', (e) => {
+  if (JUMP_KEYS.includes(e.code)) game.onRelease();
 });
 
 const STEP = 1 / 60;

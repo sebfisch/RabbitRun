@@ -1,7 +1,9 @@
 import { GROUND_Y } from './terrain.js';
 
-export const GRAVITY = 950;   // px/s²
-export const JUMP_VY = -340;  // px/s
+export const GRAVITY = 950;       // px/s²
+export const JUMP_VY = -340;      // px/s, voller Sprung (Taste gehalten)
+const JUMP_VY_TAP = -240;         // Sprung, wenn beim Absprung schon losgelassen
+const JUMP_CUT_VY = -130;         // Aufstieg wird beim Loslassen hierauf gekappt
 
 export function aabb(a, b) {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -18,18 +20,28 @@ export class Rabbit {
     this.onGround = true;
     this.coyote = 0;       // Restzeit, in der nach Verlassen des Bodens noch gesprungen werden darf
     this.jumpBuffer = 0;   // Restzeit, in der ein zu früher Tastendruck noch zählt
+    this.jumpHeld = false;
     this.animTime = 0;
   }
 
   queueJump() {
     this.jumpBuffer = 0.1;
+    this.jumpHeld = true;
+  }
+
+  // Loslassen: je kürzer der Tap, desto niedriger der Sprung
+  releaseJump() {
+    this.jumpHeld = false;
+    if (!this.onGround && this.vy < JUMP_CUT_VY) {
+      this.vy = JUMP_CUT_VY;
+    }
   }
 
   update(dt, terrain) {
     this.animTime += dt;
 
     if (this.jumpBuffer > 0 && (this.onGround || this.coyote > 0)) {
-      this.vy = JUMP_VY;
+      this.vy = this.jumpHeld ? JUMP_VY : JUMP_VY_TAP;
       this.onGround = false;
       this.coyote = 0;
       this.jumpBuffer = 0;

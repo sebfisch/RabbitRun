@@ -69,6 +69,12 @@ export class Game {
     }
   }
 
+  onRelease() {
+    if (this.state === 'running') {
+      this.rabbit.releaseJump();
+    }
+  }
+
   update(dt) {
     this.stateTime += dt;
     if (this.state !== 'running') {
@@ -149,7 +155,7 @@ export class Game {
       const gap = 2 * TILE + Math.floor(Math.random() * steps) * TILE;
       const gapStart = this.terrain.endX;
       this.terrain.appendGap(gap);
-      if (Math.random() < 0.5) this.spawnCarrotArc(gapStart, gap);
+      if (Math.random() < 0.5) this.spawnCarrotArc(gapStart, gap, speedAtArrival);
     } else {
       // Fuchs auf einem großzügigen festen Abschnitt, nie an einer Schluchtkante
       const stretch = quantize(Math.max(176, speedAtArrival * 0.9));
@@ -168,13 +174,14 @@ export class Game {
     }
   }
 
-  spawnCarrotArc(gapStart, gapWidth) {
-    const offsets = [
-      [0.3, 34],
-      [0.5, 42],
-      [0.7, 34],
-    ];
-    for (const [frac, height] of offsets) {
+  // Möhren entlang der echten Sprungparabel platzieren, damit ein voller
+  // Sprung kurz vor der Kante sie zuverlässig einsammelt.
+  spawnCarrotArc(gapStart, gapWidth, speed) {
+    const EARLY = 0.08; // angenommener Absprung: so viele Sekunden vor der Kante
+    for (const frac of [0.3, 0.5, 0.7]) {
+      const t = EARLY + (gapWidth * frac) / speed;
+      const h = -JUMP_VY * t - 0.5 * GRAVITY * t * t; // Höhe der Hasen-Unterkante
+      const height = Math.min(60, Math.max(18, h + 12));
       this.carrots.push(new Carrot(gapStart + gapWidth * frac - 4, GROUND_Y - height));
     }
   }

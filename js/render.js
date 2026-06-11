@@ -88,11 +88,12 @@ function drawHud(ctx, game) {
 }
 
 function drawStartOverlay(ctx, game) {
-  text(ctx, 'RABBIT RUN', VIEW_W / 2, 58, 22, '#ffd75e');
-  text(ctx, 'Tippen oder Leertaste: Springen', VIEW_W / 2, 84);
-  text(ctx, 'Sammle Möhren, weiche Füchsen aus!', VIEW_W / 2, 98);
+  text(ctx, 'RABBIT RUN', VIEW_W / 2, 56, 22, '#ffd75e');
+  text(ctx, 'Tippen oder Leertaste: Springen', VIEW_W / 2, 80);
+  text(ctx, 'Länger halten = höher springen!', VIEW_W / 2, 93);
+  text(ctx, 'Sammle Möhren, weiche Füchsen aus!', VIEW_W / 2, 106);
   if (game.highscore > 0) {
-    text(ctx, `Rekord: ${game.highscore}`, VIEW_W / 2, 118, 8, '#fff6e0');
+    text(ctx, `Rekord: ${game.highscore}`, VIEW_W / 2, 122, 8, '#fff6e0');
   }
   if (Math.floor(game.stateTime * 1.5) % 2 === 0) {
     text(ctx, 'Tippen zum Starten', VIEW_W / 2, 138, 8, '#ffd75e');

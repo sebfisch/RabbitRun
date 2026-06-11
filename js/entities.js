@@ -21,6 +21,7 @@ export class Rabbit {
     this.coyote = 0;       // Restzeit, in der nach Verlassen des Bodens noch gesprungen werden darf
     this.jumpBuffer = 0;   // Restzeit, in der ein zu früher Tastendruck noch zählt
     this.jumpHeld = false;
+    this.fallen = false;   // in eine Schlucht gestürzt (unter die Bodenkante)
     this.animTime = 0;
   }
 
@@ -48,11 +49,15 @@ export class Rabbit {
     }
     this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
 
+    const feetBefore = this.y + this.h;
     this.vy += GRAVITY * dt;
     this.y += this.vy * dt;
 
+    // Landen nur, wenn der Hase von oben kommt. Wer beim Überqueren einer
+    // Schlucht unter die Bodenkante sinkt, kann nicht auf der anderen Seite
+    // "auftauchen" – auch schmale Schluchten sind damit tödlich.
     const ground = terrain.groundAt(this.x + this.w / 2);
-    if (ground !== null && this.vy >= 0 && this.y + this.h >= ground) {
+    if (ground !== null && this.vy >= 0 && this.y + this.h >= ground && feetBefore <= ground + 0.5) {
       this.y = ground - this.h;
       this.vy = 0;
       this.onGround = true;
@@ -60,6 +65,10 @@ export class Rabbit {
     } else {
       this.onGround = false;
       this.coyote = Math.max(0, this.coyote - dt);
+    }
+
+    if (!this.onGround && this.y + this.h > GROUND_Y + 4) {
+      this.fallen = true;
     }
   }
 }

@@ -85,7 +85,11 @@ export class Game {
     this.time += dt;
     this.speed = Math.min(MAX_SPEED, BASE_SPEED + SPEED_RAMP * this.time);
     this.cameraX += this.speed * dt;
-    this.rabbit.x = this.cameraX + RABBIT_SCREEN_X;
+    // Ein in die Schlucht gestürzter Hase prallt an der Wand ab und fällt
+    // senkrecht, statt durch die Schluchtwand zu laufen.
+    if (!this.rabbit.fallen) {
+      this.rabbit.x = this.cameraX + RABBIT_SCREEN_X;
+    }
 
     this.generateAhead();
     this.rabbit.update(dt, this.terrain);

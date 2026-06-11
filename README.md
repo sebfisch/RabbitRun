@@ -8,8 +8,9 @@ oder Leertaste, weicht Füchsen aus, überspringt Schluchten und sammelt Möhren
 
 - **Springen:** Tippen (Touch), Klicken oder Leertaste / Pfeil hoch / W –
   je länger gehalten wird, desto höher der Sprung
-- Auf Touch-Geräten wechselt das Spiel beim ersten Tipp automatisch in den
-  Vollbildmodus (außer auf iOS, wo der Browser das nicht erlaubt)
+- Beim Starten wechselt das Spiel automatisch in den Vollbildmodus und
+  verlässt ihn beim Game Over wieder (außer auf iOS, wo der Browser die
+  Fullscreen-API nicht unterstützt)
 - **Möhren** einsammeln – sie zählen als Punkte
 - **Füchsen ausweichen** und **Schluchten überspringen** – Berührung oder Sturz
   bedeutet Game Over

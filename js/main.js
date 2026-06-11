@@ -17,9 +17,10 @@ window.addEventListener('resize', resize);
 window.addEventListener('orientationchange', resize);
 document.addEventListener('fullscreenchange', resize);
 
-// Vollbild geht aus Sicherheitsgründen nur nach einer Nutzergeste,
-// daher beim ersten Tap (nur auf Touch-Geräten, am Desktop bleibt es ein Fenster).
-// iOS Safari unterstützt die Fullscreen-API nicht – dort bleibt es beim Vollbild-Layout.
+// Vollbild geht aus Sicherheitsgründen nur nach einer Nutzergeste, daher beim
+// Klick/Tap, der das Spiel startet (nicht bei Sprüngen). Beim Game Over wird
+// es wieder verlassen. iOS Safari unterstützt die Fullscreen-API nicht –
+// dort bleibt es beim Vollbild-Layout.
 function tryFullscreen() {
   if (document.fullscreenElement) return;
   const el = document.documentElement;
@@ -34,11 +35,28 @@ function tryFullscreen() {
   }
 }
 
+function exitFullscreen() {
+  if (!document.fullscreenElement) return;
+  const exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if (exit) {
+    try {
+      const result = exit.call(document);
+      if (result && result.catch) result.catch(() => {});
+    } catch {
+      // ignorieren
+    }
+  }
+}
+
 const game = new Game();
+
+function startsGame() {
+  return game.state === 'start' || (game.state === 'gameover' && game.stateTime > 0.5);
+}
 
 window.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  if (e.pointerType === 'touch') tryFullscreen();
+  if (startsGame()) tryFullscreen();
   game.onPress();
 });
 window.addEventListener('pointerup', () => game.onRelease());
@@ -61,6 +79,7 @@ window.addEventListener('keyup', (e) => {
 const STEP = 1 / 60;
 let last = performance.now();
 let accumulator = 0;
+let prevState = game.state;
 
 function frame(now) {
   let dt = (now - last) / 1000;
@@ -71,6 +90,10 @@ function frame(now) {
     game.update(STEP);
     accumulator -= STEP;
   }
+  if (game.state === 'gameover' && prevState !== 'gameover') {
+    exitFullscreen();
+  }
+  prevState = game.state;
   ctx.imageSmoothingEnabled = false;
   render(ctx, game);
   requestAnimationFrame(frame);

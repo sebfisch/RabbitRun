@@ -54,13 +54,26 @@ function startsGame() {
   return game.state === 'start' || (game.state === 'gameover' && game.stateTime > 0.5);
 }
 
+// Bei Touch-Eingaben gilt erst pointerup als Nutzergeste für die
+// Fullscreen-API, daher wird Vollbild beim Loslassen des Start-Taps angefordert.
+let fullscreenOnRelease = false;
+
 window.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  if (startsGame()) tryFullscreen();
+  if (startsGame()) fullscreenOnRelease = true;
   game.onPress();
 });
-window.addEventListener('pointerup', () => game.onRelease());
-window.addEventListener('pointercancel', () => game.onRelease());
+window.addEventListener('pointerup', () => {
+  if (fullscreenOnRelease) {
+    fullscreenOnRelease = false;
+    tryFullscreen();
+  }
+  game.onRelease();
+});
+window.addEventListener('pointercancel', () => {
+  fullscreenOnRelease = false;
+  game.onRelease();
+});
 // verhindert Doppeltipp-Zoom/Scrollen auf iOS; Eingabe läuft über pointerdown
 window.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
 window.addEventListener('contextmenu', (e) => e.preventDefault());

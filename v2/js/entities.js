@@ -31,6 +31,12 @@ export class Rabbit {
     this.flutterTime = 99; // steuert die Flatter-Animation nach dem Doppelsprung
     this.diving = false;   // Sturzflug aktiv
     this.landTimer = 0;    // steuert das Stauchen bei der Landung
+    // Für die Stomp-Erkennung: Fußposition zu Frame-Beginn und
+    // Fallgeschwindigkeit vor der Lande-Korrektur. Ein Sturzflug legt bis zu
+    // 9 px pro Frame zurück – der Vergleich "nachher" allein würde Treffer
+    // von oben fälschlich als seitliche Berührung werten.
+    this.prevFeet = this.y + this.h;
+    this.fallSpeed = 0;
     // Ereignis-Flags, die die Spiellogik ausliest (Sound/Partikel/Shake)
     this.justJumped = false;
     this.justAirJumped = false;
@@ -94,9 +100,11 @@ export class Rabbit {
     this.jumpBuffer = Math.max(0, this.jumpBuffer - dt);
 
     const feetBefore = this.y + this.h;
+    this.prevFeet = feetBefore;
     const g = this.diving ? GRAVITY * 2.2 : GRAVITY;
     this.vy = Math.min(this.diving ? DIVE_FALL : MAX_FALL, this.vy + g * dt);
     this.y += this.vy * dt;
+    this.fallSpeed = this.vy; // vor der Lande-Korrektur gemerkt (Landen setzt vy auf 0)
 
     // Landen nur von oben, auf der höchsten Oberfläche (Boden oder Plattform).
     // Wer beim Überqueren einer Schlucht unter die Bodenkante sinkt, kann

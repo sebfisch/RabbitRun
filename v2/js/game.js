@@ -152,8 +152,10 @@ export class Game {
         this.stompReward(fox.x + fox.w / 2, fox.y, 25);
         continue;
       }
-      const feet = this.rabbit.y + this.rabbit.h;
-      if (this.rabbit.vy > 40 && feet < fox.y + fox.h * 0.75) {
+      // Zählt als Treffer von oben, wenn die Füße zu Frame-Beginn noch über
+      // dem Fuchsrücken waren und der Hase fiel – auch wenn er im selben
+      // Frame tiefer sinkt oder schon auf dem Boden aufsetzt.
+      if (this.rabbit.fallSpeed > 40 && this.rabbit.prevFeet <= fox.y + fox.h * 0.75) {
         // Klassischer Hüpfer auf den Kopf – der Sturzflug macht ihn leichter
         fox.squashed = true;
         this.stompReward(fox.x + fox.w / 2, fox.y, 25);
@@ -172,8 +174,8 @@ export class Game {
         this.stompReward(hawk.x + hawk.w / 2, hawk.y, 25);
         continue;
       }
-      if (this.rabbit.diving && this.rabbit.vy > 0 &&
-          this.rabbit.y + this.rabbit.h < hawk.y + hawk.h * 0.8) {
+      if (this.rabbit.diving && this.rabbit.fallSpeed > 0 &&
+          this.rabbit.prevFeet <= hawk.y + hawk.h * 0.8) {
         // Falke im Sturzflug erwischt – die Königsdisziplin
         hawk.dead = true;
         this.stompReward(hawk.x + hawk.w / 2, hawk.y, 40);
